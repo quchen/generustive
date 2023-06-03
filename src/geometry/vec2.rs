@@ -1,3 +1,5 @@
+use super::angle::Angle;
+use super::angle::*;
 use std::ops::*;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -7,8 +9,12 @@ pub struct Vec2 {
 }
 
 impl Vec2 {
-    pub fn new(x: f64, y: f64) -> Self {
+    pub fn xy(x: f64, y: f64) -> Self {
         Vec2 { x, y }
+    }
+
+    pub fn polar(r: f64, angle: Angle) -> Self {
+        Self::xy(r * angle.as_rad().cos(), r * angle.as_rad().sin())
     }
 
     pub fn dot(self, p2: Self) -> f64 {
@@ -25,6 +31,10 @@ impl Vec2 {
 
     pub fn cross(self, other: Self) -> f64 {
         self.x * other.y - self.y * other.x
+    }
+
+    pub fn angle(self) -> Angle {
+        Angle::rad(self.y.atan2(self.x))
     }
 }
 
