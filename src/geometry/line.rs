@@ -1,10 +1,10 @@
 use super::angle::Angle;
-use crate::geometry::vec2::*;
+use super::vec2::*;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Line {
-    start: Vec2,
-    end: Vec2,
+    pub start: Vec2,
+    pub end: Vec2,
 }
 
 impl Line {

@@ -1,3 +1,5 @@
 cheats.rs.md
 .vscode
 target/
+*.png
+*.svg
