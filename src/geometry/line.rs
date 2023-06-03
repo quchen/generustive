@@ -48,6 +48,11 @@ impl Line {
         result.push(self.end);
         result
     }
+
+    pub fn subdivide_by_length(self, segment_length: f64) -> Vec<Vec2> {
+        let segments = self.length() / segment_length.abs();
+        self.subdivide_n(segments.ceil() as usize)
+    }
 }
 
 #[cfg(test)]
@@ -60,5 +65,13 @@ mod tests {
         let segments = 10;
         let result = line.subdivide_n(segments);
         assert_eq!(result.len(), segments);
+    }
+
+    #[test]
+    fn subdivide_by_length() {
+        let line = Line::from_to(Vec2::xy(0., 0.), Vec2::xy(100., 0.));
+        let segment_length = 10.;
+        let result = line.subdivide_by_length(segment_length);
+        assert_eq!(result.len(), 10);
     }
 }
