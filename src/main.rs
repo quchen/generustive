@@ -1,6 +1,6 @@
 pub mod geometry;
 
-use crate::{geometry::line::Line, geometry::vec2::Vec2};
+use geometry::*;
 
 fn main() {
     let v1 = Vec2::xy(1., 2.);
