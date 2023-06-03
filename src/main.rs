@@ -18,8 +18,8 @@ fn main() {
     context.paint().expect("Couldn't paint");
 
     context.set_source_rgb(0., 0., 0.);
-    l.sketch(&context);
-    context.stroke().expect("could not stroke");
+    context.sketch(l);
+    context.stroke();
 
     let mut file = File::create("output.png").expect("Couldn't create file.");
     surface
