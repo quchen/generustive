@@ -1,5 +1,8 @@
+use std::ops::Deref;
+
 use crate::geometry::*;
-use cairo::Context;
+use cairo::{Context, Error};
+use rand_distr::BinomialError;
 
 pub trait Sketch<T> {
     fn sketch(&self, object: T) -> ();
@@ -22,5 +25,18 @@ impl Sketch<Circle> for Context {
         let Circle { center, radius } = circle;
 
         self.arc(center.x, center.y, radius, 0., 2. * std::f64::consts::PI)
+    }
+}
+
+pub trait Scoping {
+    fn scoped<R>(&self, body: impl FnOnce(&Context) -> Result<R, Error>) -> Result<R, Error>;
+}
+
+impl Scoping for Context {
+    fn scoped<R>(&self, body: impl FnOnce(&Context) -> Result<R, Error>) -> Result<R, Error> {
+        self.save()?;
+        let result = body(&self)?;
+        self.restore()?;
+        Ok(result)
     }
 }

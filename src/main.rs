@@ -22,8 +22,10 @@ fn main() {
     );
     context.set_source_rgb(0., 0., 0.);
     for point in points {
-        context.sketch(Circle::new(point, 3.));
-        context.fill().expect("Cannot fill");
+        context.scoped(|| {
+            context.sketch(Circle::new(point, 3.));
+            context.fill().expect("Cannot fill");
+        })
     }
 
     let mut file = File::create("output.png").expect("Couldn't create file.");
