@@ -34,4 +34,31 @@ impl Line {
     pub fn angle(self) -> Angle {
         self.vec2().angle()
     }
+
+    pub fn subdivide_n(self, num_segments: usize) -> Vec<Vec2> {
+        let mut result = Vec::with_capacity(num_segments + 1);
+        result.push(self.start);
+        for i in 1..num_segments - 1 {
+            // ^ -1 because we explicitly add start/end outside of the loop, in
+            // order to guarantee the end points remain identical.
+            let frac: f64 = i as f64 / num_segments as f64;
+            let v = self.vec2();
+            result.push(v * frac);
+        }
+        result.push(self.end);
+        result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::geometry::line::*;
+
+    #[test]
+    fn subdivide_n() {
+        let line = Line::from_to(Vec2::xy(0., 0.), Vec2::xy(100., 0.));
+        let segments = 10;
+        let result = line.subdivide_n(segments);
+        assert_eq!(result.len(), segments);
+    }
 }

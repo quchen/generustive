@@ -1,5 +1,4 @@
 use super::angle::Angle;
-use super::angle::*;
 use std::ops::*;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
