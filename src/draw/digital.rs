@@ -16,3 +16,11 @@ impl Sketch<Line> for Context {
         self.line_to(x1, y1);
     }
 }
+
+impl Sketch<Circle> for Context {
+    fn sketch(&self, circle: Circle) -> () {
+        let Circle { center, radius } = circle;
+
+        self.arc(center.x, center.y, radius, 0., 2. * std::f64::consts::PI)
+    }
+}
