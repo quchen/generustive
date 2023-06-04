@@ -5,6 +5,12 @@ use super::vec2::*;
 #[derive(Debug, PartialEq, Clone)]
 pub struct Polygon(Vec<Vec2>);
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Orientation {
+    Positive,
+    Negative,
+}
+
 impl Polygon {
     pub fn from_points(points: Vec<Vec2>) -> Self {
         Self(points)
@@ -31,6 +37,14 @@ impl Polygon {
             .map(|Line { start, end }| start.cross(end))
             .sum::<f64>()
             / 2.
+    }
+
+    pub fn orientation(&self) -> Orientation {
+        if self.area_signed() > 0. {
+            Orientation::Positive
+        } else {
+            Orientation::Negative
+        }
     }
 
     pub fn area(&self) -> f64 {
