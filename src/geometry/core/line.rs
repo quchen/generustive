@@ -57,7 +57,7 @@ impl Line {
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::line::*;
+    use crate::geometry::core::*;
 
     #[test]
     fn subdivide_n() {
