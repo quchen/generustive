@@ -1,13 +1,17 @@
 use crate::geometry::angle::*;
 use crate::geometry::bb::*;
 use crate::geometry::vec2::*;
-use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::ops::{Index, IndexMut};
 use std::vec;
 
 /// Sample a number of points to yield a visually uniform point distribution.
-pub fn poisson_disc<R: HasBB>(rng: &mut ThreadRng, region: R, radius: f64, k: usize) -> Vec<Vec2> {
+pub fn poisson_disc<R: Rng, Region: HasBB>(
+    rng: &mut R,
+    region: Region,
+    radius: f64,
+    k: usize,
+) -> Vec<Vec2> {
     let bb = region.bb();
     let initial_point = region.bb().center();
     let mut active_points = vec![initial_point];
@@ -46,7 +50,7 @@ pub fn poisson_disc<R: HasBB>(rng: &mut ThreadRng, region: R, radius: f64, k: us
     result
 }
 
-fn random_index<T>(rng: &mut ThreadRng, vec: &Vec<T>) -> Option<usize> {
+fn random_index<R: Rng, T>(rng: &mut R, vec: &Vec<T>) -> Option<usize> {
     if vec.is_empty() {
         None
     } else {
@@ -54,7 +58,7 @@ fn random_index<T>(rng: &mut ThreadRng, vec: &Vec<T>) -> Option<usize> {
     }
 }
 
-fn candidates_around_sample(rng: &mut ThreadRng, k: usize, radius: f64, point: &Vec2) -> Vec<Vec2> {
+fn candidates_around_sample<R: Rng>(rng: &mut R, k: usize, radius: f64, point: &Vec2) -> Vec<Vec2> {
     let pi = std::f64::consts::PI;
     let phi0 = rng.gen_range(0. ..2. * pi);
     let delta_phi = 2. * pi / (k as f64);
@@ -72,7 +76,7 @@ fn candidates_around_sample(rng: &mut ThreadRng, k: usize, radius: f64, point: &
 }
 
 /// Random in-place permutation.
-fn shuffle<T>(rng: &mut ThreadRng, mut vec: Vec<T>) -> Vec<T> {
+fn shuffle<R: Rng, T>(rng: &mut R, mut vec: Vec<T>) -> Vec<T> {
     // Fisher/Yates shuffle
     let n = vec.len();
     for i in 0..n - 1 {

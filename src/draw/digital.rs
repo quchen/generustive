@@ -44,16 +44,40 @@ pub mod png {
 
     pub fn write_file<P: AsRef<Path>, R>(
         path: P,
-        actions: impl FnOnce(&Context) -> Result<R, Error>,
+        width: i32,
+        height: i32,
+        actions: impl FnOnce(f64, f64, &Context) -> Result<R, Error>,
     ) -> Result<(), IoError> {
-        let surface = ImageSurface::create(Format::ARgb32, 600, 600)?;
+        let surface = ImageSurface::create(Format::ARgb32, width, height)?;
         let context = Context::new(&surface)?;
         context.set_source_rgba(0.9, 0.9, 0.9, 0.);
         context.paint()?;
 
-        actions(&context)?;
+        actions(width as f64, height as f64, &context)?;
 
         let mut file = File::create(path)?;
         surface.write_to_png(&mut file)
+    }
+}
+
+pub mod svg {
+    use cairo::{Context, Error, IoError, SvgSurface};
+    use std::path::Path;
+
+    pub fn write_file<P: AsRef<Path>, R>(
+        path: P,
+        width: i32,
+        height: i32,
+        actions: impl FnOnce(f64, f64, &Context) -> Result<R, Error>,
+    ) -> Result<(), IoError> {
+        let mut surface = SvgSurface::new(width as f64, height as f64, Some(path))?;
+        surface.set_document_unit(cairo::SvgUnit::Px);
+        let context = Context::new(&surface)?;
+        context.set_source_rgba(0., 0., 0., 0.);
+        context.paint()?;
+
+        actions(width as f64, height as f64, &context)?;
+
+        Ok(())
     }
 }
