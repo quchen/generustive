@@ -7,19 +7,24 @@ use geometry::*;
 use std::fs::File;
 
 fn main() {
-    let v1 = Vec2::xy(10., 10.);
-    let v2 = Vec2::xy(590., 590.);
-    let l = Line::from_to(v1, v2);
-
     let surface =
         ImageSurface::create(Format::ARgb32, 600, 600).expect("Couldn't create a surface");
     let context = Context::new(&surface).expect("Couldn't create a context");
     context.set_source_rgb(0.9, 0.9, 0.9);
     context.paint().expect("Couldn't paint");
 
+    let mut rng = rand::thread_rng();
+    let points = poisson_disc(
+        &mut rng,
+        vec![Vec2::xy(10., 10.), Vec2::xy(590., 590.)],
+        20.,
+        5,
+    );
     context.set_source_rgb(0., 0., 0.);
-    context.sketch(l);
-    context.stroke();
+    for point in points {
+        context.sketch(Circle::new(point, 3.));
+        context.fill().expect("Cannot fill");
+    }
 
     let mut file = File::create("output.png").expect("Couldn't create file.");
     surface
