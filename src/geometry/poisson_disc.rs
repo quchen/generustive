@@ -14,8 +14,13 @@ pub fn poisson_disc<R: Rng, Region: HasBB>(
 ) -> Vec<Vec2> {
     let bb = region.bb();
     let initial_point = region.bb().center();
-    let mut active_points = vec![initial_point];
     let mut grid = Grid::new(radius / 2_f64.sqrt(), bb);
+    let mut active_points = Vec::with_capacity(0);
+    // ^ TODO what’s a good initial capacity?
+    // It’s somewhere between 0 and the densest circle packing in a square, see
+    // https://en.wikipedia.org/wiki/Circle_packing_in_a_square
+    grid.insert(initial_point);
+    active_points.push(initial_point);
     let mut result = vec![];
 
     while let Some(active_i) = random_index(rng, &active_points) {

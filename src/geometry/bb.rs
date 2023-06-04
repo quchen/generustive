@@ -55,6 +55,10 @@ impl BB {
     pub fn min(self) -> Vec2 {
         self.min
     }
+
+    pub fn area(self) -> f64 {
+        (self.max.x - self.min.x) * (self.max.y - self.min.y)
+    }
 }
 
 impl Sum for BB {
