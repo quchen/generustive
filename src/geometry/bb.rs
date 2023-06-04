@@ -1,6 +1,8 @@
 use super::line::*;
 use super::vec2::*;
+use impl_trait_for_tuples::impl_for_tuples;
 use std::f64::INFINITY;
+use std::iter::Sum;
 use std::ops::Add;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -8,6 +10,17 @@ pub struct BB {
     min: Vec2,
     max: Vec2,
 }
+
+static ZERO_BB: BB = BB {
+    min: Vec2 {
+        x: INFINITY,
+        y: INFINITY,
+    },
+    max: Vec2 {
+        x: -INFINITY,
+        y: -INFINITY,
+    },
+};
 
 impl Add for BB {
     type Output = Self;
@@ -44,19 +57,9 @@ impl BB {
     }
 }
 
-impl std::iter::Sum for BB {
+impl Sum for BB {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        let zero_bb = BB {
-            min: Vec2 {
-                x: INFINITY,
-                y: INFINITY,
-            },
-            max: Vec2 {
-                x: -INFINITY,
-                y: -INFINITY,
-            },
-        };
-        iter.fold(zero_bb, |acc, bb| acc + bb)
+        iter.fold(ZERO_BB, |acc, bb| acc + bb)
     }
 }
 
@@ -82,5 +85,20 @@ impl<T: HasBB> HasBB for Vec<T> {
 impl HasBB for Line {
     fn bb(&self) -> BB {
         self.start.bb() + self.end.bb()
+    }
+}
+
+/// Neutral element with respect to +.
+impl HasBB for () {
+    fn bb(&self) -> BB {
+        ZERO_BB
+    }
+}
+
+#[impl_for_tuples(1, 3)]
+/// The bounding box of a tuple is the union of the elements’ bounding boxes.
+impl HasBB for Tuple {
+    fn bb(&self) -> BB {
+        for_tuples!( ( #( Tuple.bb())+* ) );
     }
 }
