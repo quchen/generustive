@@ -1,11 +1,12 @@
-use rand::rngs::ThreadRng;
-use rand::Rng;
-
 use crate::geometry::angle::*;
 use crate::geometry::bb::*;
 use crate::geometry::vec2::*;
+use rand::rngs::ThreadRng;
+use rand::Rng;
+use std::ops::{Index, IndexMut};
 use std::vec;
 
+/// Sample a number of points to yield a visually uniform point distribution.
 pub fn poisson_disc<R: HasBB>(rng: &mut ThreadRng, region: R, radius: f64, k: usize) -> Vec<Vec2> {
     let bb = region.bb();
     let initial_point = region.bb().center();
@@ -98,10 +99,6 @@ impl Grid {
         }
     }
 
-    fn index(&self, ix: usize, iy: usize) -> usize {
-        iy * self.size_y + ix
-    }
-
     fn cell(&self, point: Vec2) -> (usize, usize) {
         (
             (point.x / self.cell_size).floor() as usize,
@@ -110,13 +107,8 @@ impl Grid {
     }
 
     pub fn insert(&mut self, point: Vec2) {
-        let (ix, iy) = self.cell(point);
-        let index = self.index(ix, iy);
-        self.vec[index] = Some(point);
-    }
-
-    fn lookup_i(&self, ix: usize, iy: usize) -> Option<Vec2> {
-        self.vec[self.index(ix, iy)]
+        let index = self.cell(point);
+        self[index] = Some(point);
     }
 
     fn neighbouring_points(&self, point: Vec2) -> Vec<Vec2> {
@@ -133,11 +125,25 @@ impl Grid {
                 if iy < 0 {
                     continue;
                 };
-                if let Some(p) = self.lookup_i(ix as usize, iy as usize) {
+                if let Some(p) = self[(ix as usize, iy as usize)] {
                     result.push(p)
                 };
             }
         }
         result
+    }
+}
+
+impl Index<(usize, usize)> for Grid {
+    type Output = Option<Vec2>;
+
+    fn index(&self, (ix, iy): (usize, usize)) -> &Self::Output {
+        &self.vec[iy * self.size_y + ix]
+    }
+}
+
+impl IndexMut<(usize, usize)> for Grid {
+    fn index_mut(&mut self, (ix, iy): (usize, usize)) -> &mut Self::Output {
+        &mut self.vec[iy * self.size_y + ix]
     }
 }
