@@ -2,7 +2,7 @@ pub mod draw;
 pub mod geometry;
 
 use cairo::Context;
-use draw::{png, *};
+use draw::digital::{png, *};
 use geometry::*;
 use rand::{rngs::SmallRng, SeedableRng};
 
