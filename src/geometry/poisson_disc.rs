@@ -1,5 +1,6 @@
 use crate::geometry::core::*;
 use rand::Rng;
+use std::cmp::{max, min};
 use std::ops::{Index, IndexMut};
 use std::vec;
 
@@ -13,10 +14,8 @@ pub fn poisson_disc<R: Rng, Region: HasBB>(
     let bb = region.bb();
     let initial_point = region.bb().center();
     let mut grid = Grid::new(radius / 2_f64.sqrt(), bb);
-    let mut active_points = Vec::with_capacity(0);
-    // ^ TODO what’s a good initial capacity?
-    // It’s somewhere between 0 and the densest circle packing in a square, see
-    // https://en.wikipedia.org/wiki/Circle_packing_in_a_square
+    let mut active_points = Vec::with_capacity((grid.size() as f64).sqrt() as usize);
+    // ^ Not sure about a good initial size, but sqrt(grid size) should be a good starting point.
     grid.insert(initial_point);
     active_points.push(initial_point);
     let mut result = vec![];
@@ -90,19 +89,26 @@ fn shuffle<R: Rng, T>(rng: &mut R, mut vec: Vec<T>) -> Vec<T> {
 
 struct Grid {
     cell_size: f64,
+    size_x: usize,
     size_y: usize,
     vec: Vec<Option<Vec2>>,
 }
 
 impl Grid {
     pub fn new(cell_size: f64, bb: BB) -> Self {
-        let size_x = 1 + (bb.max().x / cell_size).ceil() as usize;
-        let size_y = 1 + (bb.max().y / cell_size).ceil() as usize;
+        let size_x = (bb.max().x / cell_size).ceil() as usize;
+        let size_y = (bb.max().y / cell_size).ceil() as usize;
+        let size = size_x * size_y;
         Grid {
             cell_size,
+            size_x,
             size_y,
-            vec: vec![None; size_x * size_y],
+            vec: vec![None; size],
         }
+    }
+
+    pub fn size(&self) -> usize {
+        self.size_x * self.size_y
     }
 
     fn cell(&self, point: Vec2) -> (usize, usize) {
@@ -119,23 +125,23 @@ impl Grid {
 
     fn neighbouring_points(&self, point: Vec2) -> Vec<Vec2> {
         let cell = self.cell(point);
-        let center_ix = cell.0 as isize;
-        let center_iy = cell.1 as isize;
 
-        let mut result = Vec::with_capacity(21);
-        for ix in center_ix - 2..center_ix + 2 {
-            if ix < 0 {
-                continue;
-            };
-            for iy in center_iy - 2..center_iy + 2 {
-                if iy < 0 {
-                    continue;
-                };
+        let center_ix = cell.0 as isize;
+        let ix_range = max(0, center_ix - 2)..=min(self.size_x as isize - 1, center_ix + 2);
+
+        let center_iy = cell.1 as isize;
+        let iy_range = max(0, center_iy - 2)..=min(self.size_y as isize - 1, center_iy + 2);
+
+        // 25 is a 5*5 square. We don’t actually need to look at the corners so strictly
+        // speaking 21 would be enough, which I will implement later (AKA, not going to).
+        let mut result = Vec::with_capacity(25);
+        ix_range.for_each(|ix| {
+            iy_range.clone().for_each(|iy| {
                 if let Some(p) = self[(ix as usize, iy as usize)] {
                     result.push(p)
                 };
-            }
-        }
+            });
+        });
         result
     }
 }

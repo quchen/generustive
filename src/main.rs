@@ -23,7 +23,7 @@ fn main() -> Result<(), cairo::IoError> {
         }
         Ok(())
     };
-    png::write_file("out/output.png", 100, 100, paint_my_stuff)?;
-    svg::write_file("out/output.svg", 100, 100, paint_my_stuff)?;
+    png::write_file("out/output.png", 500, 500, paint_my_stuff)?;
+    svg::write_file("out/output.svg", 500, 500, paint_my_stuff)?;
     Ok(())
 }
