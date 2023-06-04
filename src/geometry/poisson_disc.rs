@@ -1,6 +1,4 @@
-use crate::geometry::angle::*;
-use crate::geometry::bb::*;
-use crate::geometry::vec2::*;
+use crate::geometry::core::*;
 use rand::Rng;
 use std::ops::{Index, IndexMut};
 use std::vec;
