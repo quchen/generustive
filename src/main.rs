@@ -1,13 +1,12 @@
 pub mod draw;
 pub mod geometry;
 
-use cairo::Context;
 use draw::digital::{png, *};
 use geometry::*;
 use rand::{rngs::SmallRng, SeedableRng};
 
 fn main() -> Result<(), cairo::IoError> {
-    let paint_my_stuff = |width, height, context: &Context| {
+    let paint_my_stuff = |width, height, context: &cairo::Context| -> Result<(), cairo::Error> {
         let mut rng: SmallRng = SmallRng::seed_from_u64(0);
         let points = poisson_disc(
             &mut rng,
