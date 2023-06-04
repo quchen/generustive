@@ -1,5 +1,6 @@
 use super::line::*;
 use super::vec2::*;
+use std::f64::INFINITY;
 use std::ops::Add;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -43,6 +44,22 @@ impl BB {
     }
 }
 
+impl std::iter::Sum for BB {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let zero_bb = BB {
+            min: Vec2 {
+                x: INFINITY,
+                y: INFINITY,
+            },
+            max: Vec2 {
+                x: -INFINITY,
+                y: -INFINITY,
+            },
+        };
+        iter.fold(zero_bb, |acc, bb| acc + bb)
+    }
+}
+
 pub trait HasBB {
     fn bb(&self) -> BB;
 }
@@ -53,6 +70,12 @@ impl HasBB for Vec2 {
             min: *self,
             max: *self,
         }
+    }
+}
+
+impl<T: HasBB> HasBB for Vec<T> {
+    fn bb(&self) -> BB {
+        self.iter().map(|p| p.bb()).sum()
     }
 }
 
