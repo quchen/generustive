@@ -1,8 +1,5 @@
-use std::ops::Deref;
-
 use crate::geometry::*;
 use cairo::{Context, Error};
-use rand_distr::BinomialError;
 
 pub trait Sketch<T> {
     fn sketch(&self, object: T) -> ();
@@ -38,5 +35,25 @@ impl Scoping for Context {
         let result = body(&self)?;
         self.restore()?;
         Ok(result)
+    }
+}
+
+pub mod png {
+    use cairo::{Context, Error, Format, ImageSurface, IoError};
+    use std::{fs::File, path::Path};
+
+    pub fn write_file<P: AsRef<Path>, R>(
+        path: P,
+        actions: impl FnOnce(&Context) -> Result<R, Error>,
+    ) -> Result<(), IoError> {
+        let surface = ImageSurface::create(Format::ARgb32, 600, 600)?;
+        let context = Context::new(&surface)?;
+        context.set_source_rgba(0.9, 0.9, 0.9, 0.);
+        context.paint()?;
+
+        actions(&context)?;
+
+        let mut file = File::create(path)?;
+        surface.write_to_png(&mut file)
     }
 }
