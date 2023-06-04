@@ -4,15 +4,15 @@ pub mod geometry;
 use cairo::Context;
 use draw::{png, *};
 use geometry::*;
-use rand_seeder::{Seeder, SipRng};
+use rand::{rngs::SmallRng, SeedableRng};
 
 fn main() -> Result<(), cairo::IoError> {
     let paint_my_stuff = |width, height, context: &Context| {
-        let mut rng: SipRng = Seeder::from("stripy zebra").make_rng();
+        let mut rng: SmallRng = SmallRng::seed_from_u64(0);
         let points = poisson_disc(
             &mut rng,
             vec![Vec2::xy(10., 10.), Vec2::xy(width - 10., height - 10.)],
-            20.,
+            10.,
             5,
         );
         context.set_source_rgb(0., 0., 0.);
