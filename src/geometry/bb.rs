@@ -2,6 +2,7 @@ use super::line::*;
 use super::vec2::*;
 use std::ops::Add;
 
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct BB {
     min: Vec2,
     max: Vec2,
@@ -24,21 +25,39 @@ impl Add for BB {
     }
 }
 
+impl BB {
+    pub fn center(self) -> Vec2 {
+        (self.min + self.max) / 2.
+    }
+
+    pub fn is_inside(self, other: BB) -> bool {
+        self + other == other
+    }
+
+    pub fn max(self) -> Vec2 {
+        self.max
+    }
+
+    pub fn min(self) -> Vec2 {
+        self.min
+    }
+}
+
 pub trait HasBB {
-    fn bb(self) -> BB;
+    fn bb(&self) -> BB;
 }
 
 impl HasBB for Vec2 {
-    fn bb(self) -> BB {
+    fn bb(&self) -> BB {
         BB {
-            min: self,
-            max: self,
+            min: *self,
+            max: *self,
         }
     }
 }
 
 impl HasBB for Line {
-    fn bb(self) -> BB {
+    fn bb(&self) -> BB {
         self.start.bb() + self.end.bb()
     }
 }
