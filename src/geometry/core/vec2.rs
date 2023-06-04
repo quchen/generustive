@@ -17,15 +17,15 @@ impl Vec2 {
     }
 
     pub fn dot(self, p2: Self) -> f64 {
-        return self.x * p2.x + self.y * p2.y;
+        self.x * p2.x + self.y * p2.y
     }
 
     pub fn norm_square(self) -> f64 {
-        return self.dot(self);
+        self.dot(self)
     }
 
     pub fn norm(self) -> f64 {
-        return self.norm_square().sqrt();
+        self.norm_square().sqrt()
     }
 
     pub fn cross(self, other: Self) -> f64 {
@@ -49,7 +49,7 @@ impl Add for Vec2 {
 }
 
 impl AddAssign for Vec2 {
-    fn add_assign(&mut self, other: Self) -> () {
+    fn add_assign(&mut self, other: Self) {
         *self = Self {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -80,7 +80,7 @@ impl Sub for Vec2 {
 }
 
 impl SubAssign for Vec2 {
-    fn sub_assign(&mut self, other: Self) -> () {
+    fn sub_assign(&mut self, other: Self) {
         *self = Self {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -100,7 +100,7 @@ impl Mul<f64> for Vec2 {
 }
 
 impl MulAssign<f64> for Vec2 {
-    fn mul_assign(&mut self, other: f64) -> () {
+    fn mul_assign(&mut self, other: f64) {
         *self = Self {
             x: self.x * other,
             y: self.y * other,
@@ -128,7 +128,7 @@ impl Div<f64> for Vec2 {
 }
 
 impl DivAssign<f64> for Vec2 {
-    fn div_assign(&mut self, other: f64) -> () {
+    fn div_assign(&mut self, other: f64) {
         *self = Self {
             x: self.x / other,
             y: self.y / other,

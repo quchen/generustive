@@ -29,13 +29,12 @@ pub fn poisson_disc<R: Rng, Region: HasBB>(
         let new_point: Option<Vec2> = candidates
             .into_iter()
             .filter(|candidate| candidate.bb().is_inside(bb))
-            .filter(|candidate| {
+            .find(|candidate| {
                 let neighbours = grid.neighbouring_points(*candidate);
                 let too_close =
                     |neighbour| (*candidate - neighbour).norm_square() <= radius.powi(2);
                 !neighbours.into_iter().any(too_close)
-            })
-            .nth(0);
+            });
 
         match new_point {
             None => {
