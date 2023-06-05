@@ -1,4 +1,4 @@
-use super::angle::Angle;
+use std::fmt::Display;
 use std::ops::*;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -34,6 +34,12 @@ impl Vec2 {
 
     pub fn angle(self) -> Angle {
         Angle::rad(self.y.atan2(self.x))
+    }
+}
+
+impl Display for Vec2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
     }
 }
 
