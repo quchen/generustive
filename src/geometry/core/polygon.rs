@@ -133,4 +133,15 @@ mod tests {
         ]);
         assert!(!polygon.is_convex())
     }
+
+    #[test]
+    fn standard_square_has_positive_orientation() {
+        let standard_square = Polygon::from_points(vec![
+            Vec2::xy(0., 0.),
+            Vec2::xy(100., 0.),
+            Vec2::xy(100., 100.),
+            Vec2::xy(0., 100.),
+        ]);
+        assert_eq!(standard_square.orientation(), Orientation::Positive);
+    }
 }
