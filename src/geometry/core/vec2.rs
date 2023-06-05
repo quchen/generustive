@@ -1,3 +1,5 @@
+use super::{angle::Angle, Polygon};
+use std::cmp::Ordering::Greater;
 use std::fmt::Display;
 use std::ops::*;
 
@@ -139,5 +141,82 @@ impl DivAssign<f64> for Vec2 {
             x: self.x / other,
             y: self.y / other,
         }
+    }
+}
+
+pub fn convex_hull(points: &[Vec2]) -> Polygon {
+    // Andrew's monotone chain convex hull algorithm
+
+    let mut sorted = points.to_owned();
+    sorted.sort_by(|p, q| {
+        let compare_x = p.x.partial_cmp(&q.x).unwrap_or(Greater);
+        let compare_y = p.y.partial_cmp(&q.y).unwrap_or(Greater);
+        compare_x.then(compare_y)
+    });
+
+    let mut result = Vec::new();
+    {
+        for &p2 in sorted.iter() {
+            while result.len() >= 2 {
+                let p0: Vec2 = result[result.len() - 1]; // Not sure why this needs a type annotation.
+                let p1 = result[result.len() - 2];
+                let left_right = (p1 - p0).cross(p2 - p1);
+                if left_right > 0. {
+                    result.pop();
+                } else {
+                    break;
+                }
+            }
+            result.push(p2)
+        }
+        result.pop();
+    }
+
+    {
+        let mut back = Vec::with_capacity(result.len());
+        for &p2 in sorted.iter().rev() {
+            while back.len() >= 2 {
+                let p0: Vec2 = back[back.len() - 1];
+                let p1 = back[back.len() - 2];
+                let left_right = (p1 - p0).cross(p2 - p1);
+                if left_right > 0. {
+                    back.pop();
+                } else {
+                    break;
+                }
+            }
+            back.push(p2)
+        }
+        back.pop();
+
+        result.append(&mut back);
+    }
+
+    Polygon::from_points(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::geometry::core::*;
+
+    #[test]
+    fn convex_hull_tests() {
+        let points = vec![
+            Vec2::xy(0., 0.),
+            Vec2::xy(100., 0.),
+            Vec2::xy(50., 50.),
+            Vec2::xy(100., 100.),
+            Vec2::xy(0., 100.),
+        ];
+        let hull = convex_hull(&points);
+        let expected = Polygon::from_points(vec![
+            Vec2 { x: 0., y: 0. },
+            Vec2 { x: 100., y: 0. },
+            Vec2 { x: 100., y: 100. },
+            Vec2 { x: 0., y: 100. },
+        ]);
+        assert!(hull.is_convex());
+        assert_eq!(hull, expected);
+        assert_eq!(hull.orientation(), Orientation::Positive);
     }
 }
