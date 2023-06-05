@@ -68,7 +68,7 @@ impl Polygon {
             .zip(points.iter().cycle().skip(2))
             .map(|((p, q), r)| (*q - *p).cross(*r - *q))
             .filter(|x| x.abs() > 1e-10)
-            .map(|x| x.signum());
+            .map(|x| x.partial_cmp(&0.).unwrap());
 
         let all_equal = |xs| {
             let mut first = None;
