@@ -1,7 +1,12 @@
 pub mod draw;
 pub mod geometry;
+pub mod numerics;
 
-use draw::digital::{png, *};
+use draw::{
+    color::{mma97::mma97, Rgb},
+    digital::{png, *},
+};
+
 use geometry::*;
 use rand::{rngs::SmallRng, SeedableRng};
 
@@ -12,13 +17,17 @@ fn main() -> Result<(), cairo::IoError> {
             &mut rng,
             vec![Vec2::xy(10., 10.), Vec2::xy(width - 10., height - 10.)],
             10.,
-            5,
+            50,
         );
-        context.set_source_rgb(0., 0., 0.);
-        for point in points {
+        for (i, &point) in points.iter().enumerate() {
             context.scoped(|context| {
+                let Rgb(r, g, b): Rgb = mma97(i);
+                context.set_source_rgb(r, g, b);
                 context.sketch(Circle::new(point, 2.));
-                context.fill()
+                context.fill()?;
+                // context.sketch(Circle::new(point, 10.));
+                // context.stroke()
+                Ok(())
             })?
         }
         Ok(())
