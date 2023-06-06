@@ -27,7 +27,7 @@ impl Vec2 {
     }
 
     pub fn norm(self) -> f64 {
-        self.norm_square().sqrt()
+        self.x.hypot(self.y)
     }
 
     pub fn cross(self, other: Self) -> f64 {
