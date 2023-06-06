@@ -1,6 +1,5 @@
 use crate::geometry::core::*;
 use rand::Rng;
-use std::cmp::{max, min};
 use std::ops::{Index, IndexMut};
 use std::vec;
 
@@ -23,17 +22,15 @@ pub fn poisson_disc<R: Rng, Region: HasBB>(
     while let Some(active_i) = random_index(rng, &active_points) {
         let active_sample = active_points[active_i];
 
-        let candidates = candidates_around_sample(rng, k, radius, &active_sample);
-
-        let new_point: Option<Vec2> = candidates
-            .into_iter()
-            .filter(|candidate| candidate.bb().is_inside(bb))
-            .find(|candidate| {
-                let neighbours = grid.neighbouring_points(*candidate);
-                let too_close =
-                    |neighbour| (*candidate - neighbour).norm_square() <= radius.powi(2);
-                !neighbours.into_iter().any(too_close)
-            });
+        let new_point: Option<Vec2> =
+            quality_candidates_around_sample(rng, k, radius, active_sample)
+                .filter(|candidate| candidate.bb().is_inside(bb))
+                .find(|candidate| {
+                    let neighbours = grid.neighbouring_points(*candidate);
+                    let too_close =
+                        |neighbour| (*candidate - neighbour).norm_square() <= radius.powi(2);
+                    !neighbours.into_iter().any(too_close)
+                });
 
         match new_point {
             None => {
@@ -59,32 +56,21 @@ fn random_index<R: Rng, T>(rng: &mut R, vec: &Vec<T>) -> Option<usize> {
     }
 }
 
-fn candidates_around_sample<R: Rng>(rng: &mut R, k: usize, radius: f64, point: &Vec2) -> Vec<Vec2> {
-    let pi = std::f64::consts::PI;
-    let phi0 = rng.gen_range(0. ..2. * pi);
-    let delta_phi = 2. * pi / (k as f64);
-    let radius_plus_epsilon = radius + 1e-6;
-    let result = (0..k)
-        .map(|i| {
-            let offset = Vec2::polar(
-                radius_plus_epsilon,
-                Angle::rad(phi0 + delta_phi * (i as f64)),
-            );
-            *point + offset
-        })
-        .collect();
-    shuffle(rng, result)
-}
-
-/// Random in-place permutation.
-fn shuffle<R: Rng, T>(rng: &mut R, mut vec: Vec<T>) -> Vec<T> {
-    // Fisher/Yates shuffle
-    let n = vec.len();
-    for i in 0..n - 1 {
-        let j = rng.gen_range(i..n);
-        vec.swap(i, j);
-    }
-    vec
+/// Sample new points in an annulus of (r,2r) around the center.
+///
+/// Yields good results with medium-sized k (e.g. 20).
+fn quality_candidates_around_sample<R: Rng>(
+    rng: &mut R,
+    k: usize,
+    radius: f64,
+    center: Vec2,
+) -> impl Iterator<Item = Vec2> + '_ {
+    (0..k).map(move |_i| {
+        let r = rng.gen_range(radius..(2. * radius));
+        let phi = Angle::deg(rng.gen_range(0. ..360.));
+        let offset = Vec2::polar(r, phi);
+        center + offset
+    })
 }
 
 struct Grid {
@@ -127,21 +113,37 @@ impl Grid {
         let cell = self.cell(point);
 
         let center_ix = cell.0 as isize;
-        let ix_range = max(0, center_ix - 2)..=min(self.size_x as isize - 1, center_ix + 2);
-
         let center_iy = cell.1 as isize;
-        let iy_range = max(0, center_iy - 2)..=min(self.size_y as isize - 1, center_iy + 2);
 
         // 25 is a 5*5 square. We don’t actually need to look at the corners so strictly
         // speaking 21 would be enough, which I will implement later (AKA, not going to).
         let mut result = Vec::with_capacity(25);
-        ix_range.for_each(|ix| {
-            iy_range.clone().for_each(|iy| {
+        for ix_delta in -2..=2 {
+            let ix = center_ix + ix_delta;
+            let x_out_of_bounds = ix < 0 || ix > self.size_x as isize - 1;
+            if x_out_of_bounds {
+                continue;
+            }
+            for iy_delta in -2..=2 {
+                let iy = center_iy + iy_delta;
+                let y_out_of_bounds = iy < 0 || iy > self.size_y as isize - 1;
+                if y_out_of_bounds {
+                    continue;
+                }
+
+                // The corners of the 5*5 square are too far away to be reached
+                // within a distance of radius r from the center tile, so we
+                // exclude them here.
+                let is_corner = (ix_delta * iy_delta).abs() == 4;
+                if is_corner {
+                    continue;
+                }
+
                 if let Some(p) = self[(ix as usize, iy as usize)] {
                     result.push(p)
                 };
-            });
-        });
+            }
+        }
         result
     }
 }
