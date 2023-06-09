@@ -53,7 +53,7 @@ fn random_index<R: Rng, T>(rng: &mut R, vec: &Vec<T>) -> Option<usize> {
     if vec.is_empty() {
         None
     } else {
-        Some(rng.gen_range(0..vec.len()))
+        Some(rng.gen_range(0 .. vec.len()))
     }
 }
 
@@ -66,9 +66,9 @@ fn quality_candidates_around_sample<R: Rng>(
     radius: f64,
     center: Vec2,
 ) -> impl Iterator<Item = Vec2> + '_ {
-    (0..k).map(move |_i| {
-        let r = rng.gen_range(radius..(2. * radius));
-        let phi = Angle::deg(rng.gen_range(0. ..360.));
+    (0 .. k).map(move |_i| {
+        let r = rng.gen_range(radius .. (2. * radius));
+        let phi = Angle::deg(rng.gen_range(0. .. 360.));
         let offset = Vec2::polar(r, phi);
         center + offset
     })
@@ -119,13 +119,13 @@ impl Grid {
         // 25 is a 5*5 square. We don’t actually need to look at the corners so strictly
         // speaking 21 would be enough, which I will implement later (AKA, not going to).
         let mut result = Vec::with_capacity(25);
-        for ix_delta in -2..=2 {
+        for ix_delta in -2 ..= 2 {
             let ix = center_ix + ix_delta;
             let x_out_of_bounds = ix < 0 || ix > self.size_x as isize - 1;
             if x_out_of_bounds {
                 continue;
             }
-            for iy_delta in -2..=2 {
+            for iy_delta in -2 ..= 2 {
                 let iy = center_iy + iy_delta;
                 let y_out_of_bounds = iy < 0 || iy > self.size_y as isize - 1;
                 if y_out_of_bounds {

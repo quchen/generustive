@@ -38,7 +38,7 @@ impl Line {
     pub fn subdivide_n(self, num_segments: usize) -> Vec<Vec2> {
         let mut result = Vec::with_capacity(num_segments + 1);
         result.push(self.start);
-        for i in 1..num_segments - 1 {
+        for i in 1 .. num_segments - 1 {
             // ^ -1 because we explicitly add start/end outside of the loop, in
             // order to guarantee the end points remain identical.
             let frac: f64 = i as f64 / num_segments as f64;
