@@ -17,7 +17,7 @@ pub fn poisson_disc<R: Rng, Region: HasBB>(
     // ^ Not sure about a good initial size, but sqrt(grid size) should be a good starting point.
     grid.insert(initial_point);
     active_points.push(initial_point);
-    let mut result = vec![];
+    let mut result = Vec::with_capacity(grid.size());
 
     while let Some(active_i) = random_index(rng, &active_points) {
         let active_sample = active_points[active_i];
@@ -45,6 +45,7 @@ pub fn poisson_disc<R: Rng, Region: HasBB>(
             }
         }
     }
+    result.shrink_to_fit();
     result
 }
 
