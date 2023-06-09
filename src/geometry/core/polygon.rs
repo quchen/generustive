@@ -20,6 +20,10 @@ impl Polygon {
         &self.0
     }
 
+    pub fn points_mut(&mut self) -> &mut Vec<Vec2> {
+        &mut self.0
+    }
+
     pub fn edges(&self) -> impl Iterator<Item = Line> + '_ {
         let points = self.points();
         points
