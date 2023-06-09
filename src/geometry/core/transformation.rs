@@ -1,3 +1,5 @@
+use num::One;
+
 use super::*;
 use std::ops::{Mul, MulAssign};
 
@@ -18,16 +20,9 @@ pub struct Transformation {
 
 impl Transformation {
     pub fn id() -> Self {
-        Transformation {
-            m11: 1.,
-            m12: 0.,
-            m21: 0.,
-            m22: 1.,
-
-            b1: 0.,
-            b2: 0.,
-        }
+        Transformation::one()
     }
+
     pub fn inverse(self) -> Self {
         let Transformation {
             m11: a,
@@ -101,6 +96,19 @@ impl Mul for Transformation {
 
             b1: self.m11 * rhs.b1 + self.m12 * rhs.b2 + self.b1,
             b2: self.m21 * rhs.b1 + self.m22 * rhs.b2 + self.b2,
+        }
+    }
+}
+
+impl One for Transformation {
+    fn one() -> Self {
+        Transformation {
+            m11: 1.,
+            m12: 0.,
+            m21: 0.,
+            m22: 1.,
+            b1: 0.,
+            b2: 0.,
         }
     }
 }
