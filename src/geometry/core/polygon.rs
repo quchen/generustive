@@ -16,19 +16,18 @@ impl Polygon {
         Self(points)
     }
 
-    pub fn points(&self) -> &Vec<Vec2> {
-        &self.0
+    pub fn points(&self) -> impl Iterator<Item = &Vec2> + Clone {
+        self.0.iter()
     }
 
-    pub fn points_mut(&mut self) -> &mut Vec<Vec2> {
-        &mut self.0
+    pub fn points_mut(&mut self) -> impl Iterator<Item = &mut Vec2> {
+        self.0.iter_mut()
     }
 
     pub fn edges(&self) -> impl Iterator<Item = Line> + '_ {
         let points = self.points();
-        points
-            .iter()
-            .zip(points.iter().cycle().skip(1))
+        self.points()
+            .zip(self.points().cycle().skip(1))
             .map(|(p1, p2)| Line::from_to(*p1, *p2))
     }
 
@@ -60,16 +59,14 @@ impl Polygon {
     /// To avoid numerically unstable near-straight edges, we consider
     /// almost-straight corners convex.
     pub fn is_convex(&self) -> bool {
-        let points = self.points();
-
         // Idea: calculate the cross product of adjacent lines. The sign of a cross
         // product tells us whether the bend direction. If all edges bend
         // left/right, then all cross products have the same sign. Finally, convex
         // polygons have all angles in the same direction.
-        let cross_signs = points
-            .iter()
-            .zip(points.iter().cycle().skip(1))
-            .zip(points.iter().cycle().skip(2))
+        let cross_signs = self
+            .points()
+            .zip(self.points().cycle().skip(1))
+            .zip(self.points().cycle().skip(2))
             .map(|((p, q), r)| (*q - *p).cross(*r - *q))
             .filter(|x| x.abs() > 1e-10)
             .map(|x| x.partial_cmp(&0.).unwrap());
@@ -92,7 +89,7 @@ impl Polygon {
 
 impl HasBB for Polygon {
     fn bb(&self) -> BB {
-        self.points().bb()
+        self.points().map(|p| p.bb()).sum()
     }
 }
 
