@@ -55,6 +55,25 @@ impl Line {
     }
 }
 
+/// Start, end
+impl From<(Vec2, Vec2)> for Line {
+    fn from(ab: (Vec2, Vec2)) -> Self {
+        Line {
+            start: ab.0,
+            end: ab.1,
+        }
+    }
+}
+
+/// Start x, start y, end x, end y
+impl From<(f64, f64, f64, f64)> for Line {
+    fn from(abxy: (f64, f64, f64, f64)) -> Self {
+        let start = Vec2::from((abxy.0, abxy.1));
+        let end = Vec2::from((abxy.2, abxy.3));
+        Line::from((start, end))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::geometry::core::*;

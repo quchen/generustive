@@ -92,6 +92,12 @@ impl HasBB for Polygon {
     }
 }
 
+impl From<Vec<Vec2>> for Polygon {
+    fn from(corners: Vec<Vec2>) -> Self {
+        Self::from_points(corners)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::geometry::core::*;
@@ -106,14 +112,14 @@ mod tests {
         ];
         let points_len = points.len();
 
-        let polygon = Polygon::from_points(points);
+        let polygon = Polygon::from(points);
         let edges: Vec<Line> = polygon.edges().collect();
         assert_eq!(points_len, edges.len());
     }
 
     #[test]
     fn is_convex_for_convex() {
-        let polygon = Polygon::from_points(vec![
+        let polygon = Polygon::from(vec![
             Vec2::xy(10., 10.),
             Vec2::xy(10., 90.),
             Vec2::xy(90., 90.),
@@ -124,7 +130,7 @@ mod tests {
 
     #[test]
     fn is_convex_for_concave() {
-        let polygon = Polygon::from_points(vec![
+        let polygon = Polygon::from(vec![
             Vec2::xy(110., 10.),
             Vec2::xy(110., 90.),
             Vec2::xy(150., 50.),
@@ -136,7 +142,7 @@ mod tests {
 
     #[test]
     fn standard_square_has_positive_orientation() {
-        let standard_square = Polygon::from_points(vec![
+        let standard_square = Polygon::from(vec![
             Vec2::xy(0., 0.),
             Vec2::xy(100., 0.),
             Vec2::xy(100., 100.),

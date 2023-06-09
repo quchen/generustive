@@ -11,3 +11,10 @@ impl Circle {
         Self { center, radius }
     }
 }
+
+/// Center, radius
+impl From<(Vec2, f64)> for Circle {
+    fn from(value: (Vec2, f64)) -> Self {
+        Circle::new(value.0, value.1)
+    }
+}

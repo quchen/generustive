@@ -45,6 +45,20 @@ impl Display for Vec2 {
     }
 }
 
+/// x, y
+impl From<(f64, f64)> for Vec2 {
+    fn from(xy: (f64, f64)) -> Self {
+        Self::xy(xy.0, xy.1)
+    }
+}
+
+/// radius, angle
+impl From<(f64, Angle)> for Vec2 {
+    fn from(rphi: (f64, Angle)) -> Self {
+        Self::polar(rphi.0, rphi.1)
+    }
+}
+
 impl Add for Vec2 {
     type Output = Self;
 
