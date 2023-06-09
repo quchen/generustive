@@ -135,7 +135,7 @@ impl MulAssign for Transformation {
 
 trait Transform {
     fn transform(&self, t: Transformation) -> Self;
-    // fn transform_mut(&mut self, t: Transformation);
+    fn transform_mut(&mut self, t: Transformation);
 }
 
 impl Transform for Vec2 {
@@ -145,11 +145,20 @@ impl Transform for Vec2 {
             y: t.m21 * self.x + t.m22 * self.y + t.b2,
         }
     }
+
+    fn transform_mut(&mut self, t: Transformation) {
+        self.x = t.m11 * self.x + t.m12 * self.y + t.b1;
+        self.y = t.m21 * self.x + t.m22 * self.y + t.b2;
+    }
 }
 
 impl Transform for Vec<Vec2> {
     fn transform(&self, t: Transformation) -> Self {
         self.iter().map(|p| p.transform(t)).collect()
+    }
+
+    fn transform_mut(&mut self, t: Transformation) {
+        self.iter_mut().for_each(|p| p.transform_mut(t));
     }
 }
 
@@ -160,10 +169,69 @@ impl Transform for Line {
             end: self.end.transform(t),
         }
     }
+
+    fn transform_mut(&mut self, t: Transformation) {
+        self.start.transform_mut(t);
+        self.end.transform_mut(t);
+    }
+}
+
+#[cfg(test)]
+mod transform_line_test {
+    use super::Transformation;
+    use crate::geometry::{core::transformation::Transform, Line, Vec2};
+
+    #[test]
+    fn inplace() {
+        let mut line = Line {
+            start: Vec2::xy(0., 0.),
+            end: Vec2::xy(100., 0.),
+        };
+        let t = Transformation::translate(Vec2::xy(0., 10.));
+        line.transform_mut(t);
+        let expected = Line {
+            start: Vec2::xy(0., 10.),
+            end: Vec2::xy(100., 10.),
+        };
+
+        assert_eq!(line, expected);
+    }
 }
 
 impl Transform for Polygon {
     fn transform(&self, t: Transformation) -> Self {
         Polygon::from_points(self.points().transform(t))
+    }
+
+    fn transform_mut(&mut self, t: Transformation) {
+        self.points_mut().transform_mut(t);
+    }
+}
+
+#[cfg(test)]
+mod transform_polygon_test {
+    use super::Transformation;
+    use crate::geometry::{core::transformation::Transform, Polygon, Vec2};
+
+    #[test]
+    fn inplace() {
+        let mut polygon = Polygon::from_points(vec![
+            Vec2::xy(0., 0.),
+            Vec2::xy(100., 0.),
+            Vec2::xy(50., 50.),
+            Vec2::xy(100., 100.),
+            Vec2::xy(0., 100.),
+        ]);
+        let t = Transformation::translate(Vec2::xy(0., 10.));
+        polygon.transform_mut(t);
+        let expected = Polygon::from_points(vec![
+            Vec2::xy(0., 10.),
+            Vec2::xy(100., 10.),
+            Vec2::xy(50., 60.),
+            Vec2::xy(100., 110.),
+            Vec2::xy(0., 110.),
+        ]);
+
+        assert_eq!(polygon, expected);
     }
 }
